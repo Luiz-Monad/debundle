@@ -1,8 +1,8 @@
-var recast   = require('recast')
-var traverse = recast.types.traverse
-var build    = recast.types.builders
-var parse    = recast.parse
-var print    = recast.print
+var recast = require('recast')
+var visit  = recast.types.visit
+var build  = recast.types.builders
+var parse  = recast.parse
+var print  = recast.print
 
 module.exports = replacer
 
@@ -11,26 +11,22 @@ function replacer(ast) {
   if (typeof ast === 'string')
     ast = parse(ast)
 
-  replace.code = code
-  replace.replace = replace
-
-  return replace
-
-  function code() {
-    return print(ast).code
-  }
+  return replace;
 
   function replace(methodPath, updater) {
-    methodPath = Array.isArray(methodPath)
+    var methodPath = Array.isArray(methodPath)
       ?  methodPath
       : [methodPath]
 
     var size = methodPath.length
 
-    traverse(ast, size === 1
-      ? single
-      : nested
-    )
+    fn = size === 1 ? single : nested;
+    visit(ast, {
+      visitNode(path) {
+        fn(path.node);
+        this.traverse(path);
+      }
+    });
 
     return replace
 
@@ -41,7 +37,6 @@ function replacer(ast) {
 
       var result = updater(node)
       if (result !== undefined) {
-        this.replace(result)
         return false
       }
     }
@@ -67,7 +62,6 @@ function replacer(ast) {
 
       var result = updater(node)
       if (result !== undefined) {
-        this.replace(result)
         return false
       }
     }

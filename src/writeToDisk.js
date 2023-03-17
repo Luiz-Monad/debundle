@@ -70,19 +70,18 @@ function writeToDisk(files) {
       throw new Error(`* Couldn't parse ast to file for ${filePath}: ${e}`);
     }
 
+    let ext = filePath.endsWith('.js') ? '' : '.js';
+
     if (fs.existsSync(directory)) {
-      return writeFile(`${path.normalize(filePath)}.js`, code);
+      return writeFile(`${path.normalize(filePath)}${ext}`, code);
     } else {
       console.log(`* ${directory} doesn't exist, creating...`);
-      return new Promise((resolve, reject) => {
-        mkdirp(directory, (err, resp) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(writeFile(`${filePath}.js`, code));
-          }
-        });
-      });
+      try {
+        mkdirp.mkdirpSync(directory);
+      } catch(e) {
+        throw new Error(`* Couldn't create directory ${directory}: ${e}`);
+      }
+      return writeFile(`${filePath}${ext}`, code);
     }
   }));
 }

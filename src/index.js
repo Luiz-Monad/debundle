@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const acorn = require('acorn');
 const fs = require('fs');
-const path = require('path');
-const inquirer = require('inquirer');
+// const path = require('path');
+// const inquirer = require('inquirer');
 const args = require('minimist')(process.argv.slice(2));
 const convertToIntegerKey = require('./utils/convertToIntegerKey');
 
@@ -99,6 +99,10 @@ if (config.type === 'browserify') {
   // var a = require('a') => var a = require(1)
   const browserifyDecoder = require('./decoders/browserify');
   modules = browserifyDecoder(iifeModules);
+} else if (config.type === "webpack_harmony") {
+  const webpackDecoder = require('./decoders/webpack_harmony');
+  modules = webpackDecoder(iifeModules, config.knownPaths);
+  config.type = 'webpack';
 } else {
   const webpackDecoder = require('./decoders/webpack');
   modules = webpackDecoder(iifeModules, config.knownPaths);
